@@ -1,10 +1,11 @@
 ﻿using ArxOne.MrAdvice.Advice;
 using NLog;
 using System;
+using System.Linq;
 
 namespace AdviserTester
 {
-  public class LogAdvice : Attribute, IMethodAdvice, IMethodInfoAdvice
+  public class LogAdvice : Attribute, IMethodAdvice
   {
     private readonly Logger _logger;
 
@@ -15,16 +16,13 @@ namespace AdviserTester
 
     public void Advise(MethodAdviceContext context)
     {
-      var contextMessage = $"Context:{context.Target}, Method:{context.TargetMethod.Name}, Type:{context.TargetType.Name}, args:{context.Arguments.Count}";
-      _logger.Log(LogLevel.Info, contextMessage);
+      var args = context.Arguments.Select(x => x.ToString());
+      var methodInfo = $"Context:{context.Target}, Method:{context.TargetMethod.Name}.";
+      _logger.Log(LogLevel.Info, $"{methodInfo} STARTED. args:{args.Count()} [{string.Join(",", args)}].");
 
       context.Proceed(); // this calls the original method
-      Console.WriteLine($"returns: {context.ReturnValue}");
-    }
 
-    public void Advise(MethodInfoAdviceContext context)
-    {
-      _logger.Log(LogLevel.Info, $"Method starting: {context.TargetMethod.Name}");
+      _logger.Log(LogLevel.Info, $"{methodInfo} ENDED." + (context.HasReturnValue ? $" Returns:{context.ReturnValue}." : ""));
     }
   }
 }
